@@ -6,3 +6,15 @@ body {
   line-height: 1.5;
   color: #333;
 }
+
+.mainBox {
+  display: grid;
+  grid-template-columns: 50% 35% 10%;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .mainBox {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
