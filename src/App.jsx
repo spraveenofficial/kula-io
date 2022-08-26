@@ -22,21 +22,14 @@ function App() {
   const [searchQuery, setSearchQuery] = useState({
     topic: "",
     location: "",
-    page: page,
+    page,
     sort: "",
   });
 
   const [
     getRepos,
-    {
-      data: repos,
-      isLoading: loading,
-      isFetching,
-      isError: error,
-      isSuccess: success,
-    },
+    { data: repos, isLoading: loading, isFetching, error, isSuccess: success },
   ] = useGetLazyReposQuery();
-
   const handleChange = (e) => {
     setSearchQuery({ ...searchQuery, [e.target.name]: e.target.value });
   };
@@ -44,6 +37,7 @@ function App() {
   const hasMoreItems = repos?.total_count > repository.length;
 
   const handleSearch = () => {
+    if (searchQuery.topic === "" && searchQuery.location === "") return;
     setRepository([]);
     setPage(1);
     getRepos(searchQuery);
@@ -106,7 +100,7 @@ function App() {
           </Button>
         </Box>
         <Box textAlign={"center"}>
-          {error ? <Text color={"red.500"}>{error}</Text> : null}
+          {error ? <Text color={"red.500"}>{error?.data?.message}</Text> : null}
           {success && repos.total_count === 0 ? (
             <Text fontSize={"2xl"} mt={3} fontWeight={"bold"} color={"red.500"}>
               No Results Found
