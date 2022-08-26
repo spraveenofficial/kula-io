@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Input from "./Components/Input";
 import { Container } from "./Components/Container";
 import { Text, Box, Button } from "@chakra-ui/react";
@@ -13,7 +13,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState({
     topic: "",
     location: "",
-    page,
+    page: page,
   });
 
   const [
@@ -28,15 +28,21 @@ function App() {
   const myPosts = repos?.items.length;
   const scroll = repos?.total_count;
 
-  const handleSearch = () => {
-    getRepos(searchQuery);
-  };
+  const hasMoreItems = repos?.total_count > page;
 
-  const loadMore = async () => {
-    setPage((old) => old + 1);
-    getRepos({ ...searchQuery, page: page + 1 });
-  };
+  const handleSearch = () => getRepos(searchQuery);
 
+  const loadMore = () => setPage((old) => old + 1);
+
+  useEffect(() => {
+    if (page !== 1) {
+      getRepos({ ...searchQuery, page: page + 1 });
+    }
+  }, [page]);
+
+  const handleMoveToProfile = (url) => window.open(url, "_blank");
+
+  console.log(hasMoreItems);
   return (
     <div className="App">
       <Container>
@@ -70,32 +76,40 @@ function App() {
           </Button>
         </Box>
         <Box textAlign={"center"}>
-          {loading ? <Spinner size={"xl"} mt={5} /> : null}
-
           {error ? <Text color={"red.500"}>{error}</Text> : null}
           {success && repos.total_count === 0 ? (
             <Text fontSize={"2xl"} mt={3} fontWeight={"bold"} color={"red.500"}>
               No Results Found
             </Text>
           ) : null}
-          {success &&
-            repos?.items?.map((items) => {
-              return <UserCards {...items} />;
-            })}
-          <InfiniteScroll
-            dataLength={10}
-            next={loadMore}
-            hasMore={myPosts < scroll ? true : false}
-            loader={
-              <div className="text-black flex-col w-full mt-5 flex align-center texts-center">
-                <div
-                  className="w-10 mb-10 h-10 rounded-full animate-spin
+
+          {loading && page === 1 ? (
+            <Spinner size={"xl"} mt={5} />
+          ) : success && repos?.items.length > 0 ? (
+            <InfiniteScroll
+              dataLength={"40000"}
+              next={loadMore}
+              hasMore={hasMoreItems}
+              loader={
+                <div className="text-black flex-col w-full mt-5 flex align-center texts-center">
+                  <div
+                    className="w-10 mb-10 h-10 rounded-full animate-spin
                   border-2 border-dashed border-black-600 border-t-black mr-1"
-                ></div>
-                <p>Loading More Content..</p>
-              </div>
-            }
-          ></InfiniteScroll>
+                  ></div>
+                  <p>Loading More Repos..</p>
+                </div>
+              }
+            >
+              {repos?.items?.map((items) => {
+                return (
+                  <UserCards
+                    {...items}
+                    handleMoveToProfile={handleMoveToProfile}
+                  />
+                );
+              })}
+            </InfiniteScroll>
+          ) : null}
         </Box>
       </Container>
     </div>

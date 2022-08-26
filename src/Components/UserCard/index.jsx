@@ -15,7 +15,9 @@ const UserCards = (props) => {
           {props.login}
         </Text>
         <Text fontSize={"xl"}>{props.id}</Text>
-        <Button href={props.repos_url}>Visit Profile</Button>
+        <Button onClick={() => props.handleMoveToProfile(props.html_url)}>
+          Visit Profile
+        </Button>
       </Box>
     </Box>
   );

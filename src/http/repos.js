@@ -10,8 +10,13 @@ export const reposApi = createApi({
         getRepos: builder.query({
             query: ({ topic,
                 location, page, sort }) => `?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`
-        })
-    }),
+        }),
+        loadMoreRepos: builder.query({
+            query: ({ topic,
+                location, page, sort }) => `?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`
+        }),
+        // Return all the data for a single repo
+    })
 })
 
 export const { useGetReposQuery } = reposApi
