@@ -9,14 +9,18 @@ export const reposApi = createApi({
     endpoints: (builder) => ({
         getRepos: builder.query({
             query: ({ topic,
-                location, page, sort }) => `?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`
+                location, page, sort }) => `?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`,
         }),
-        loadMoreRepos: builder.query({
-            query: ({ topic,
-                location, page, sort }) => `?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`
-        }),
-        // Return all the data for a single repo
-    })
+        providesTags: (result) =>
+            result
+                ? [
+                    ...result.data.map(({ id }) => ({
+                        type: "Posts",
+                        id,
+                    })),
+                ]
+                : [{ type: "Posts", id: "LIST" }],
+    }),
 })
 
 export const { useGetReposQuery } = reposApi

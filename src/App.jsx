@@ -10,6 +10,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 function App() {
   const [page, setPage] = useState(1);
+  const [repository, setRepository] = useState([]);
   const [searchQuery, setSearchQuery] = useState({
     topic: "",
     location: "",
@@ -18,19 +19,26 @@ function App() {
 
   const [
     getRepos,
-    { data: repos, isLoading: loading, isError: error, isSuccess: success },
+    {
+      data: repos,
+      isLoading: loading,
+      isFetching,
+      isError: error,
+      isSuccess: success,
+    },
   ] = useGetLazyReposQuery();
 
   const handleChange = (e) => {
     setSearchQuery({ ...searchQuery, [e.target.name]: e.target.value });
   };
 
-  const myPosts = repos?.items.length;
-  const scroll = repos?.total_count;
+  const hasMoreItems = repos?.total_count > repository.length;
 
-  const hasMoreItems = repos?.total_count > page;
-
-  const handleSearch = () => getRepos(searchQuery);
+  const handleSearch = () => {
+    setRepository([]);
+    setPage(1);
+    getRepos(searchQuery);
+  };
 
   const loadMore = () => setPage((old) => old + 1);
 
@@ -42,7 +50,14 @@ function App() {
 
   const handleMoveToProfile = (url) => window.open(url, "_blank");
 
-  console.log(hasMoreItems);
+  useEffect(() => {
+    if (repository?.length > 0) {
+      setRepository([...repository, ...repos.items]);
+    } else {
+      setRepository(repos?.items ? repos.items : []);
+    }
+  }, [repos]);
+
   return (
     <div className="App">
       <Container>
@@ -83,24 +98,16 @@ function App() {
             </Text>
           ) : null}
 
-          {loading && page === 1 ? (
+          {loading || (isFetching && page === 1) ? (
             <Spinner size={"xl"} mt={5} />
           ) : success && repos?.items.length > 0 ? (
             <InfiniteScroll
-              dataLength={"40000"}
+              dataLength={repository.length}
               next={loadMore}
               hasMore={hasMoreItems}
-              loader={
-                <div className="text-black flex-col w-full mt-5 flex align-center texts-center">
-                  <div
-                    className="w-10 mb-10 h-10 rounded-full animate-spin
-                  border-2 border-dashed border-black-600 border-t-black mr-1"
-                  ></div>
-                  <p>Loading More Repos..</p>
-                </div>
-              }
+              loader={<p>Loading More Repos..</p>}
             >
-              {repos?.items?.map((items) => {
+              {repository?.map((items) => {
                 return (
                   <UserCards
                     {...items}
@@ -108,6 +115,9 @@ function App() {
                   />
                 );
               })}
+              {repos?.total_count === repository.length && (
+                <p>Caught up all the Repositories.</p>
+              )}
             </InfiniteScroll>
           ) : null}
         </Box>
