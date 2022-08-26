@@ -11,8 +11,9 @@ export const reposApi = createApi({
             query: ({ topic,
                 location, page, sort }) => `?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`
         })
-    })
+    }),
 })
 
-
 export const { useGetReposQuery } = reposApi
+
+export const useGetLazyReposQuery = reposApi.endpoints.getRepos.useLazyQuery
