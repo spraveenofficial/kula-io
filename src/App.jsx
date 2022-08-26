@@ -1,24 +1,33 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Input from "./Components/Input";
 import { Container } from "./Components/Container";
 import { Text, Box, Button } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
 import { Spinner } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchRepos } from "./reducers/repos-reducer";
+// import { fetchRepos } from "./reducers/repos-reducer";
+import UserCards from "./Components/UserCard";
+import { useGetReposQuery } from "./http/repos";
 function App() {
   const dispatch = useDispatch();
-  const datas = useSelector((state) => state.repos);
-  console.log(datas);
-  const [data, setData] = useState({
+  const [skip, setSkip] = useState(true);
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState({
     topic: "",
     location: "",
+    page,
   });
 
+  const { repos, loading, error, success } = useGetReposQuery(searchQuery, {
+    skip,
+  });
+  console.log(repos);
   const handleChange = (e) =>
-    setData({ ...data, [e.target.name]: e.target.value });
+    setSearchQuery({ ...searchQuery, [e.target.name]: e.target.value });
 
-  const handleSearch = () => dispatch(fetchRepos(data.topic, data.location));
+  const handleSearch = () => {
+    setSkip(false);
+  };
 
   return (
     <div className="App">
@@ -53,7 +62,13 @@ function App() {
           </Button>
         </Box>
         <Box textAlign={"center"}>
-          {datas.loading ? <Spinner size={"xl"} mt={5} /> : null}
+          {loading ? <Spinner size={"xl"} mt={5} /> : null}
+
+          {error ? <Text color={"red.500"}>{error}</Text> : null}
+
+          {repos?.items?.map((items) => {
+            return <UserCards {...items} />;
+          })}
         </Box>
       </Container>
     </div>

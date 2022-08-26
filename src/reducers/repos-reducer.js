@@ -1,21 +1,11 @@
+import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
-
-export const fetchRepos = createAsyncThunk("repos/fetchRepos", async (technology, { dispatch }) => {
-    const api = createApi({
-        name: "repos",
-        reducerPath: "repos",
-        baseQuery: fetchBaseQuery({
-            baseUrl: "https://api.github.com/search/users?q=type:user+language:${technology}+location:Bangalore",
-        }),
-        endpoints: (builder) => ({
-            getRepos: builder.query({
-                query: (id) => `/${id}`
-            })
-        })
-    })
-    return api.endpoints.getRepos.select(technology);
+export const fetchRepos = createAsyncThunk("repos/fetchRepos", async (payload) => {
+    const { topic,
+        location, page, sort } = payload;
+    const { data } = await axios.get(`https://api.github.com/search/users?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`);
+    return data;
 }
 );
 
@@ -30,12 +20,12 @@ export const reposSlice = createSlice({
     },
     reducers: {
         setRepos: (state, action) => {
-            // fetch repos
-
+            state.repos = action.payload;
         },
     },
     extraReducers: (builder) => {
         builder.addCase(fetchRepos.pending, (state, action) => {
+            state.repos = [];
             state.loading = true;
         }),
             builder.addCase(fetchRepos.fulfilled, (state, action) => {
@@ -49,7 +39,5 @@ export const reposSlice = createSlice({
             })
     },
 })
-
-// export const { setRepos } = reposSlice.actions;
 
 export default reposSlice.reducer;

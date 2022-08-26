@@ -4,13 +4,15 @@ export const reposApi = createApi({
     name: "repos",
     reducerPath: "repos",
     baseQuery: fetchBaseQuery({
-        baseUrl: "https://api.github.com/search/users?q=type:user+language:${technology}+location:Bangalore",
+        baseUrl: "https://api.github.com/search/users",
     }),
     endpoints: (builder) => ({
         getRepos: builder.query({
-            query: (id) => `/${id}`
+            query: ({ topic,
+                location, page, sort }) => `?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`
         })
     })
 })
+
 
 export const { useGetReposQuery } = reposApi
