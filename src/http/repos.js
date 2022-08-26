@@ -11,15 +11,6 @@ export const reposApi = createApi({
             query: ({ topic,
                 location, page, sort }) => `?q=type:user+language:${topic}+location:${location}&sort=${sort}&page=${page}&per_page=10`,
         }),
-        providesTags: (result) =>
-            result
-                ? [
-                    ...result.data.map(({ id }) => ({
-                        type: "Posts",
-                        id,
-                    })),
-                ]
-                : [{ type: "Posts", id: "LIST" }],
     }),
 })
 

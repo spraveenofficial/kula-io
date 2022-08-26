@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import Input from "./Components/Input";
 import { Container } from "./Components/Container";
-import { Text, Box, Button } from "@chakra-ui/react";
-import { SearchIcon } from "@chakra-ui/icons";
-import { Spinner } from "@chakra-ui/react";
+import { ChevronDownIcon, SearchIcon } from "@chakra-ui/icons";
+import {
+  Text,
+  Box,
+  Button,
+  Spinner,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+} from "@chakra-ui/react";
 import UserCards from "./Components/UserCard";
 import { useGetLazyReposQuery } from "./http/repos";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -15,6 +23,7 @@ function App() {
     topic: "",
     location: "",
     page: page,
+    sort: "",
   });
 
   const [
@@ -58,6 +67,12 @@ function App() {
     }
   }, [repos]);
 
+  const handleApplyFilter = (e) => {
+    setSearchQuery({ ...searchQuery, sort: e.target.value });
+    setRepository([]);
+    setPage(1);
+    getRepos({ ...searchQuery, sort: e.target.value });
+  };
   return (
     <div className="App">
       <Container>
@@ -101,24 +116,56 @@ function App() {
           {loading || (isFetching && page === 1) ? (
             <Spinner size={"xl"} mt={5} />
           ) : success && repos?.items.length > 0 ? (
-            <InfiniteScroll
-              dataLength={repository.length}
-              next={loadMore}
-              hasMore={hasMoreItems}
-              loader={<p>Loading More Repos..</p>}
-            >
-              {repository?.map((items) => {
-                return (
-                  <UserCards
-                    {...items}
-                    handleMoveToProfile={handleMoveToProfile}
-                  />
-                );
-              })}
-              {repos?.total_count === repository.length && (
-                <p>Caught up all the Repositories.</p>
-              )}
-            </InfiniteScroll>
+            <>
+              <Box my={3}>
+                <Menu>
+                  <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+                    Filter Data
+                  </MenuButton>
+                  <MenuList fontSize={"md"}>
+                    <MenuItem
+                      name="sort"
+                      onClick={handleApplyFilter}
+                      value={"joined"}
+                    >
+                      Recent Joined
+                    </MenuItem>
+                    <MenuItem
+                      name="sort"
+                      onClick={handleApplyFilter}
+                      value={"followers"}
+                    >
+                      Most Followers
+                    </MenuItem>
+                    <MenuItem
+                      onClick={handleApplyFilter}
+                      value={"repositories"}
+                      name="sort"
+                    >
+                      Most Repos
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+              </Box>
+              <InfiniteScroll
+                dataLength={repository.length}
+                next={loadMore}
+                hasMore={hasMoreItems}
+                loader={<p>Loading More Repos..</p>}
+              >
+                {repository?.map((items) => {
+                  return (
+                    <UserCards
+                      {...items}
+                      handleMoveToProfile={handleMoveToProfile}
+                    />
+                  );
+                })}
+                {repos?.total_count === repository.length && (
+                  <p>Caught up all the Repositories.</p>
+                )}
+              </InfiniteScroll>
+            </>
           ) : null}
         </Box>
       </Container>
